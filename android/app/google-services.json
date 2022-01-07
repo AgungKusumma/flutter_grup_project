@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1089111184253",
+    "project_id": "mobileunisza1",
+    "storage_bucket": "mobileunisza1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1089111184253:android:29f6ccf1fa314841d33214",
+        "android_client_info": {
+          "package_name": "com.example.layout_design_3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1089111184253-0r1jvbfiba3hm1bdflnu7j9mbcspbpr4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQc-PW6i3tS5iZrEePq_Mj_uyQ1_NqSGU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1089111184253-0r1jvbfiba3hm1bdflnu7j9mbcspbpr4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
