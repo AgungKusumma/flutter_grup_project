@@ -1,6 +1,6 @@
-# layout_design_3
+# Flutter Group Project
 
-A new Flutter project.
+Group Project UNISZA 
 
 ## Getting Started
 
