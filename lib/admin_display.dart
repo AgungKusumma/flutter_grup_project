@@ -8,19 +8,23 @@ void main() => runApp(
 );
 
 class AdminDisplay extends StatefulWidget{
+  const AdminDisplay({Key? key}) : super(key: key);
+
   _AdminDisplay createState() => _AdminDisplay();
 }
 
 class _AdminDisplay extends State<AdminDisplay>{
 
   final _formKey = GlobalKey<FormState>();
+  final _queryKey = GlobalKey<FormState>();
   final notesReference = FirebaseDatabase.instance.reference().child('item');
   late List<Item> items;
   late StreamSubscription<Event> _onNoteAddedSubscription;
   late StreamSubscription<Event> _onNoteChangedSubscription;
 
-  late TextEditingController _name, _price;
   late String _txtname, _txtprice;
+
+  final TextEditingController _queryController = TextEditingController();
 
   @override
   void initState(){
@@ -29,6 +33,11 @@ class _AdminDisplay extends State<AdminDisplay>{
     // items = new List();
     _onNoteAddedSubscription = notesReference.onChildAdded.listen(_onNoteAdded);
     _onNoteChangedSubscription = notesReference.onChildChanged.listen(_updateItem);
+
+    //realtime suffixIcon
+    _queryController.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -42,6 +51,12 @@ class _AdminDisplay extends State<AdminDisplay>{
     setState((){
       items.add(new Item.fromSnapshot(event.snapshot));
     });
+  }
+
+  void _clearQuery() {
+    items.clear();
+    _onNoteAddedSubscription = notesReference.onChildAdded.listen(_onNoteAdded);
+    _queryController.clear();
   }
 
   void _deleteItem(BuildContext context, Item item, int position) async{
@@ -67,6 +82,14 @@ class _AdminDisplay extends State<AdminDisplay>{
       Navigator.pop(context);
     });
     notesReference.onChildChanged.listen(_updateItem);
+  }
+
+  void _searchItem(String name) {
+    items.clear();
+    _onNoteAddedSubscription =   notesReference
+        .orderByChild('name')
+        .equalTo(name)
+        .onChildAdded.listen(_onNoteAdded);
   }
 
   void _editItem(String name, String price, Item item, int position){
@@ -98,7 +121,7 @@ class _AdminDisplay extends State<AdminDisplay>{
               ),
             ),
             actions: [
-              FlatButton(
+              TextButton(
                 child: Text('Save'),
                 onPressed: (){
                   if(_formKey.currentState!.validate()){
@@ -107,7 +130,7 @@ class _AdminDisplay extends State<AdminDisplay>{
                   }
                 },
               ),
-              FlatButton(
+              TextButton(
                 child: Text('Cancel'),
                 onPressed: (){
                   Navigator.of(context).pop();
@@ -123,53 +146,133 @@ class _AdminDisplay extends State<AdminDisplay>{
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: ListView.builder(
-        itemCount: items.length,
-        padding: const EdgeInsets.all(5.0),
-        itemBuilder: (context, position){
-          return Column(
-            children: <Widget>[
-              Divider(height: 15, thickness: 2),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 4,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(items[position].name, style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-                        Text(items[position].price, style: TextStyle(fontSize: 16)),
-                      ],
-                    ),
+      child: (
+      Column(
+        children: [
+              TextField(
+                controller: _queryController,
+                key: _queryKey,
+                keyboardType: TextInputType.name,
+                decoration: InputDecoration(
+                  suffixIcon: _queryController.text.isNotEmpty ? IconButton(
+                    onPressed: _clearQuery,
+                    icon: Icon(Icons.clear),
+                  ) : null,
+                  prefixIcon: Icon(
+                    Icons.search, color: Colors.lightBlueAccent,
                   ),
-                  SizedBox(width: 30.0),
-                  Expanded(
-                    flex: 2,
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.green),
-                          iconSize: 30,
-                          onPressed: (){
-                            _editItem(items[position].name, items[position].price, items[position], position);
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          iconSize: 30,
-                          onPressed: (){
-                            _deleteItem(context, items[position],position);
-                          },
-                        ),
-                      ],
-                    ),
+                  labelText: "Search",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                    borderSide: BorderSide(color: Colors.lightBlueAccent),
                   ),
-                ],
+                ),
+                onSubmitted: (value){
+                  _searchItem(value);
+                },
+                textInputAction: TextInputAction.search,
               ),
-            ],
-          );
-        }
+          Container(
+            child: ListView.builder(
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                itemCount: items.length,
+              padding: EdgeInsets.all(5),
+              itemBuilder: (context, position){
+                return Column(
+                  children: <Widget>[
+                    Divider(height: 15, thickness: 2),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 4,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(items[position].name, style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                              Text(items[position].price, style: TextStyle(fontSize: 16)),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 30.0),
+                        Expanded(
+                          flex: 2,
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit, color: Colors.green),
+                                iconSize: 30,
+                                onPressed: (){
+                                  _editItem(items[position].name, items[position].price, items[position], position);
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                iconSize: 30,
+                                onPressed: (){
+                                  _deleteItem(context, items[position],position);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }
+            )
+          ),
+        ],
       )
+      ),
+      // child: ListView.builder(
+      //   itemCount: items.length,
+      //   padding: const EdgeInsets.all(5.0),
+      //   itemBuilder: (context, position){
+      //     return Column(
+      //       children: <Widget>[
+      //         Divider(height: 15, thickness: 2),
+      //         Row(
+      //           children: [
+      //             Expanded(
+      //               flex: 4,
+      //               child: Column(
+      //                 crossAxisAlignment: CrossAxisAlignment.start,
+      //                 children: [
+      //                   Text(items[position].name, style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+      //                   Text(items[position].price, style: TextStyle(fontSize: 16)),
+      //                 ],
+      //               ),
+      //             ),
+      //             SizedBox(width: 30.0),
+      //             Expanded(
+      //               flex: 2,
+      //               child: Row(
+      //                 children: [
+      //                   IconButton(
+      //                     icon: Icon(Icons.edit, color: Colors.green),
+      //                     iconSize: 30,
+      //                     onPressed: (){
+      //                       _editItem(items[position].name, items[position].price, items[position], position);
+      //                     },
+      //                   ),
+      //                   IconButton(
+      //                     icon: Icon(Icons.delete, color: Colors.red),
+      //                     iconSize: 30,
+      //                     onPressed: (){
+      //                       _deleteItem(context, items[position],position);
+      //                     },
+      //                   ),
+      //                 ],
+      //               ),
+      //             ),
+      //           ],
+      //         ),
+      //       ],
+      //     );
+      //   }
+      // )
     );
   }
 }
