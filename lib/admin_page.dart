@@ -16,6 +16,7 @@ class AdminPage extends StatefulWidget{
 
 class _AdminPage extends State<AdminPage>{
 
+  int _selectedDestination = 0; //Active text overlay
   late Widget mainWidget;
   FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -55,37 +56,46 @@ class _AdminPage extends State<AdminPage>{
               ),
             ),
             ListTile(
-              title: Text('Home'),
-              leading: Icon(Icons.home),
-              onTap: (){
-                setState(() {
-                  mainWidget = AdminHome();
-                });
-                Navigator.pop(context);
-              }
+                title: Text('Home', style: TextStyle(fontSize: 15)),
+                leading: Icon(Icons.home),
+                selected: _selectedDestination == 0,
+                selectedTileColor: Colors.lightBlue.shade100,
+                onTap: (){
+                  setState(() {
+                    mainWidget = AdminHome();
+                    _selectedDestination = 0;
+                  });
+                  Navigator.pop(context);
+                }
             ),
             ListTile(
-                title: Text('Display Record'),
+                title: Text('Display Record', style: TextStyle(fontSize: 15)),
                 leading: Icon(Icons.view_agenda),
+                selected: _selectedDestination == 1,
+                selectedTileColor: Colors.lightBlue.shade100,
                 onTap: (){
                   setState(() {
                     mainWidget = AdminDisplay();
+                    _selectedDestination = 1;
                   });
                   Navigator.pop(context);
                 }
             ),
             ListTile(
-                title: Text('Add New Record'),
+                title: Text('Add New Record', style: TextStyle(fontSize: 15)),
                 leading: Icon(Icons.add),
+                selected: _selectedDestination == 2,
+                selectedTileColor: Colors.lightBlue.shade100,
                 onTap: (){
                   setState(() {
                     mainWidget = AdminNew();
+                    _selectedDestination = 2;
                   });
                   Navigator.pop(context);
                 }
             ),
             ListTile(
-                title: Text('Logout'),
+                title: Text('Logout', style: TextStyle(fontSize: 15)),
                 leading: Icon(Icons.logout),
                 onTap: () async{
                   await FirebaseAuth.instance.signOut();
